@@ -8,7 +8,8 @@ import {
   StyleSheet,
   requireNativeComponent,
   View,
-  ViewPropTypes
+  ViewPropTypes,
+  findNodeHandle,
 } from 'react-native';
 
 const CameraManager = NativeModules.CameraManager || NativeModules.CameraModule;
@@ -186,7 +187,8 @@ export default class Camera extends Component {
     if (onBarCodeRead) {
       this.cameraBarCodeReadListener = Platform.select({
         ios: NativeAppEventEmitter.addListener('CameraBarCodeRead', this._onBarCodeRead),
-        android: DeviceEventEmitter.addListener('CameraBarCodeReadAndroid',  this._onBarCodeRead)
+        android: DeviceEventEmitter.addListener('CameraBarCodeReadAndroid',  this._onBarCodeRead),
+        windows: DeviceEventEmitter.addListener('CameraBarCodeReadWindows',  this._onBarCodeRead),
       })
     }
   }
@@ -227,6 +229,10 @@ export default class Camera extends Component {
       ...options
     };
 
+    if (Platform.OS === 'windows') {
+      options['view'] = findNodeHandle(this);
+    }
+
     if (options.mode === Camera.constants.CaptureMode.video) {
       options.totalSeconds = (options.totalSeconds > -1 ? options.totalSeconds : -1);
       options.preferredTimeScale = options.preferredTimeScale || 30;
@@ -253,6 +259,10 @@ export default class Camera extends Component {
       const props = convertNativeProps(this.props);
       return CameraManager.hasFlash({
         type: props.type
+      });
+    } else if (Platform.OS === 'windows') {
+      return CameraManager.hasFlash({
+        view: findNodeHandle(this)
       });
     }
     return CameraManager.hasFlash();
