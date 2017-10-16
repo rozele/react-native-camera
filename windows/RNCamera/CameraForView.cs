@@ -295,6 +295,8 @@ namespace RNCamera
             var device = _panel.HasValue
                 ? devices.FirstOrDefault(d => d.EnclosureLocation.Panel == _panel)
                 : devices.FirstOrDefault();
+            // In case of requested device not available
+            device = device ?? devices.FirstOrDefault();
 
             if (device == null)
             {
@@ -384,9 +386,13 @@ namespace RNCamera
         private async Task UpdatePreviewOrientationAsync()
         {
             var rotation = _rotationHelper.GetCameraPreviewOrientation();
-            var props = MediaCapture.VideoDeviceController.GetMediaStreamProperties(MediaStreamType.VideoPreview);
-            props.Properties.Add(RotationKey, CameraRotationHelper.ConvertSimpleOrientationToClockwiseDegrees(rotation));
-            await MediaCapture.SetEncodingPropertiesAsync(MediaStreamType.VideoPreview, props, null).AsTask().ConfigureAwait(false);
+            // Rotation causing preview problem on regular PCs.
+            if(rotation != SimpleOrientation.NotRotated)
+            {
+                var props = MediaCapture.VideoDeviceController.GetMediaStreamProperties(MediaStreamType.VideoPreview);
+                props.Properties.Add(RotationKey, CameraRotationHelper.ConvertSimpleOrientationToClockwiseDegrees(rotation));
+                await MediaCapture.SetEncodingPropertiesAsync(MediaStreamType.VideoPreview, props, null).AsTask().ConfigureAwait(false);
+            }
         }
     }
 }
