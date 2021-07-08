@@ -33,6 +33,8 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.graphics.SurfaceTexture;
 
+import com.facebook.react.bridge.ReadableMap;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -69,6 +71,7 @@ public class CameraView extends FrameLayout {
     public static final int FLASH_RED_EYE = Constants.FLASH_RED_EYE;
 
     /** The mode for for the camera device's flash control */
+    @Retention(RetentionPolicy.SOURCE)
     @IntDef({FLASH_OFF, FLASH_ON, FLASH_TORCH, FLASH_AUTO, FLASH_RED_EYE})
     public @interface Flash {
     }
@@ -270,10 +273,7 @@ public class CameraView extends FrameLayout {
             }
             mImpl = new Camera1(mCallbacks, mImpl.mPreview);
         }
-        onRestoreInstanceState(state);
-        if (wasOpened) {
-            start();
-        }
+        start();
     }
 
     /**
@@ -502,8 +502,8 @@ public class CameraView extends FrameLayout {
      * Take a picture. The result will be returned to
      * {@link Callback#onPictureTaken(CameraView, byte[])}.
      */
-    public void takePicture() {
-        mImpl.takePicture();
+    public void takePicture(ReadableMap options) {
+        mImpl.takePicture(options);
     }
 
     /**
